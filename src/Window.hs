@@ -19,8 +19,7 @@ initWindow :: a
 initWindow start draw update keyCB = do
     getArgsAndInitialize
     initialDisplayMode $= [WithDepthBuffer,DoubleBuffered,WithAlphaComponent]
-    --initialDisplayMode $= [WithDepthBuffer,DoubleBuffered,WithAlphaComponent,WithAccumBuffer]
-    createWindow "Hello World"
+    createWindow "Plasma"
     depthFunc $= Just Less
     lineSmooth $= Enabled
     blend $= Enabled
@@ -33,15 +32,12 @@ initWindow start draw update keyCB = do
     keyboardMouseCallback $= Just (keyboardMouse keyCB worldRef)
     displayCallback $= (display draw update worldRef)
     idleCallback $= Just (idle)
-    --reshapeCallback $= Just (reshape)
     return ()
 
 display :: (a -> IO ()) -> (Int -> a -> a) -> IORef a -> DisplayCallback
 display drawFunc updateFunc worldRef = do
     
     clear [ColorBuffer,DepthBuffer]
-    --accum Return 0.95
-    --clear [AccumBuffer]
 
     loadIdentity
     perspective 90 1 0.01 2.01
@@ -55,7 +51,6 @@ display drawFunc updateFunc worldRef = do
     drawFunc world
 
     swapBuffers
-    --accum Accum 0.9
 
 keyboardMouse :: (Key -> KeyState -> Modifiers -> Position -> a -> a)
               -> IORef a
@@ -64,9 +59,6 @@ keyboardMouse _ _ (Char 'f') Down _ _ = fullScreenToggle
 keyboardMouse _ _ (Char '\ESC') Down _ _ = exit
 keyboardMouse f worldRef key keySt mod pos = worldRef $~! f key keySt mod pos
 
-
-reshape :: Size -> IO ()
-reshape (Size x y) = return ()
 
 v3 :: GLfloat -> GLfloat -> GLfloat -> IO ()
 v3 x y z = vertex $ Vertex3 x y z
