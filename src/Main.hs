@@ -18,17 +18,11 @@ drawWorld w = do
     preservingMatrix (mapM_ (drawParticle t) $ wParticles w)
     where t = wTime w
 
-radius :: Num a => a
-radius = 600
-
 handleKeys :: Key -> KeyState -> Modifiers -> GL.Position -> World -> World
---handleKeys (Char 'n') Down _ _ w = addRockets (newRocket <$> (t+) <$> [1..100]) w
---    where t = wTime w
 handleKeys (Char 'n') Down _ _ w = addParticle (Particle (randomPosition t) ((randomVelocity t) +++ randomTriple t (-0.01,0.01))) w
   where t = wTime w
 handleKeys _ _ _ _ w = w
 
-  -- On a circle with a radius of 200
 randomPosition :: Time -> Position
 randomPosition t = (cos v * 800, sin v * 800, 0)
   where (v:_) = randomRs (0,2*pi) (mkStdGen t)
