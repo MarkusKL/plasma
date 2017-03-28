@@ -8,10 +8,9 @@ module World
 , pVelocity
 , newWorld
 , updateWorld
-, g
-, gt
 , Position
 , addParticle
+, radius
 ) where
 
 import System.Random
@@ -29,6 +28,9 @@ data Particle = Particle { pPosition :: Position
 newWorld :: World
 newWorld = World 0 [] 
 
+radius :: GLflaoat
+radius = 800
+
 updateWorld :: Time -> World -> World
 updateWorld t w = updateParticles d $ changeTime t w
   where d = t - wTime w
@@ -41,7 +43,7 @@ updateParticle d p = circle d $ p { pPosition =  move d (pVelocity p) (pPosition
 
 circle :: Delta -> Particle -> Particle
 circle d p = applyAcceleration d acc p
-  where acc = (-0.00000001666) *- pPosition p
+  where acc = adjustLength (-0.00001666) (pPosition p)
 
 applyAcceleration :: Delta -> Acceleration -> Particle -> Particle
 applyAcceleration d a p = p { pVelocity = pVelocity p +++ fromIntegral d *- a } 
