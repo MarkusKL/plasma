@@ -46,7 +46,7 @@ display drawFunc updateFunc worldRef = do
 
     time <- get elapsedTime
     print time
-    worldRef $~! (updateFunc (time*10))
+    worldRef $~! (updateFunc time)
     world <- get worldRef
     drawFunc world
 

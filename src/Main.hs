@@ -19,21 +19,9 @@ drawWorld w = do
     where t = wTime w
 
 handleKeys :: Key -> KeyState -> Modifiers -> GL.Position -> World -> World
-handleKeys (Char 'n') Down _ _ w = addParticle (Particle (randomPosition t) ((randomVelocity t) +++ randomTriple t (-0.01,0.01))) w
+handleKeys (Char 'n') Down _ _ w = addParticle (genParticle t) w
   where t = wTime w
 handleKeys _ _ _ _ w = w
-
-randomPosition :: Time -> Position
-randomPosition t = (cos v * 800, sin v * 800, 0)
-  where (v:_) = randomRs (0,2*pi) (mkStdGen t)
-
-randomVelocity :: Time -> Position
-randomVelocity t = (sin v * (-0.1), cos v * 0.1, 0)
-  where (v:_) = randomRs (0,2*pi) (mkStdGen t)
-
-randomTriple :: (Random a) => Time -> (a,a) -> (a,a,a)
-randomTriple d r = (r1,r2,r3)
-  where (r1:r2:r3:_) = randomRs r (mkStdGen d)
 
 drawParticle :: Time -> Particle -> IO ()
 drawParticle t p = do
