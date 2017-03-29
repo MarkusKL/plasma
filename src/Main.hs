@@ -19,8 +19,8 @@ drawWorld w = do
     where t = wTime w
 
 handleKeys :: Key -> KeyState -> Modifiers -> GL.Position -> World -> World
-handleKeys (Char 'n') Down _ _ w = addParticle (genParticle t) w
-  where t = wTime w
+--handleKeys (Char 'n') Down _ _ w = addParticle (genParticle t) w
+--  where t = wTime w
 handleKeys _ _ _ _ w = w
 
 drawParticle :: Time -> Particle -> IO ()

@@ -28,7 +28,7 @@ data Particle = Particle { pPosition :: Position
                          }
 
 newWorld :: World
-newWorld = World 0 (genParticle <$> [1..1000]) 
+newWorld = World 0 genParticle
 
 radius :: GLfloat
 radius = 750
@@ -41,7 +41,7 @@ updateWorld t w = updateParticles d $ changeTime t w
   where d = t - wTime w
 
 updateParticles :: Delta -> World -> World
-updateParticles d w = w { wParticles = updateParticle d <$> wParticles w }
+updateParticles d w = w { wParticles = pinchAll (updateParticle d <$> wParticles w) }
 
 updateParticle :: Delta -> Particle -> Particle
 updateParticle d p = circle d $ p { pPosition =  move d (pVelocity p) (pPosition p) }
@@ -52,6 +52,18 @@ circle d p = applyAcceleration d acc p
 
 applyAcceleration :: Delta -> Acceleration -> Particle -> Particle
 applyAcceleration d a p = p { pVelocity = pVelocity p +++ fromIntegral d *- a } 
+
+pinchAll :: [Particle] -> [Particle]
+pinchAll ps = fmap (pinch ps) ps
+
+pinch :: [Particle] -> Particle -> Particle
+pinch ps p = p { pVelocity = pVelocity p +++ foldr (\p' v -> pinchTwo p' p +++ v) (0,0,0) ps }
+
+pinchTwo :: Particle -> Particle -> Velocity
+pinchTwo p p' = if pPosition p == pPosition p'
+  then (0,0,0)
+  else (0.03 / len3 pos)^2 *- pos
+  where pos = pPosition p +++ (-1) *- pPosition p'
 
 addParticle :: Particle -> World -> World
 addParticle p w = w { wParticles = p:wParticles w }
@@ -71,6 +83,10 @@ randomTriple :: (Random a) => Time -> (a,a) -> (a,a,a)
 randomTriple d r = (r1,r2,r3)
   where (r1:r2:r3:_) = randomRs r (mkStdGen d)
 
-genParticle :: Time -> Particle
-genParticle t = (Particle (randomPosition t) ((randomVelocity t) +++ randomTriple (t+1) (-0.1*baseVel,0.1*baseVel)))
+genParticle :: [Particle]
+genParticle = map (\(r1,r2,r3,r4) -> (Particle (randomPosition r1 +++ randomTriple (r4+1) (-100*baseVel,100*baseVel)) ((randomVelocity r1) +++ randomTriple (r3+1) (-0.1*baseVel,0.1*baseVel)))) $ take 500 rs
+  where rs = splitList . randoms $ mkStdGen 100
+
+splitList :: [a] -> [(a,a,a,a)]
+splitList (x1:x2:x3:x4:xs) = (x1,x2,x3,x4):splitList xs
 
