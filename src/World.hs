@@ -13,6 +13,7 @@ module World
 , radius
 , genParticle
 , baseVel
+, v't
 ) where
 
 import System.Random
@@ -51,19 +52,19 @@ circle d p = applyAcceleration d acc p
   where acc = adjustLength (-baseVel^2/radius) (pPosition p)
 
 applyAcceleration :: Delta -> Acceleration -> Particle -> Particle
-applyAcceleration d a p = p { pVelocity = pVelocity p +++ fromIntegral d *- a } 
+applyAcceleration d a p = p { pVelocity = pVelocity p + fromIntegral d *- a } 
 
 pinchAll :: [Particle] -> [Particle]
 pinchAll ps = fmap (pinch ps) ps
 
 pinch :: [Particle] -> Particle -> Particle
-pinch ps p = p { pVelocity = pVelocity p +++ foldr (\p' v -> pinchTwo p' p +++ v) (0,0,0) ps }
+pinch ps p = p { pVelocity = pVelocity p + foldr (\p' v -> pinchTwo p' p + v) 0 ps }
 
 pinchTwo :: Particle -> Particle -> Velocity
 pinchTwo p p' = if pPosition p == pPosition p'
-  then (0,0,0)
-  else (0.03 / len3 pos)^2 *- pos
-  where pos = pPosition p +++ (-1) *- pPosition p'
+  then 0
+  else (0.03 / absV pos)^2 *- pos
+  where pos = pPosition p + (-1) *- pPosition p'
 
 addParticle :: Particle -> World -> World
 addParticle p w = w { wParticles = p:wParticles w }
@@ -72,19 +73,19 @@ changeTime :: Time -> World -> World
 changeTime t w = w { wTime = t } 
 
 randomPosition :: Time -> Position
-randomPosition t = (cos v * radius, sin v * radius, 0)
+randomPosition t = V (cos v * radius) (sin v * radius) 0
   where (v:_) = randomRs (0,2*pi) (mkStdGen t)
 
 randomVelocity :: Time -> Position
-randomVelocity t = (sin v * (-baseVel), cos v * baseVel, 0)
+randomVelocity t = V (sin v * (-baseVel)) (cos v * baseVel) 0
   where (v:_) = randomRs (0,2*pi) (mkStdGen t)
 
-randomTriple :: (Random a) => Time -> (a,a) -> (a,a,a)
-randomTriple d r = (r1,r2,r3)
+randomTriple :: Time -> (GLfloat,GLfloat) -> Vector
+randomTriple d r = V r1 r2 r3
   where (r1:r2:r3:_) = randomRs r (mkStdGen d)
 
 genParticle :: [Particle]
-genParticle = map (\(r1,r2,r3,r4) -> (Particle (randomPosition r1 +++ randomTriple (r4+1) (-100*baseVel,100*baseVel)) ((randomVelocity r1) +++ randomTriple (r3+1) (-0.1*baseVel,0.1*baseVel)))) $ take 500 rs
+genParticle = map (\(r1,r2,r3,r4) -> (Particle (randomPosition r1 + randomTriple (r4+1) (-100*baseVel,100*baseVel)) ((randomVelocity r1) + randomTriple (r3+1) (-0.1*baseVel,0.1*baseVel)))) $ take 500 rs
   where rs = splitList . randoms $ mkStdGen 100
 
 splitList :: [a] -> [(a,a,a,a)]

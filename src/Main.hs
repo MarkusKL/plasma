@@ -30,7 +30,7 @@ drawParticle t p = do
 
 particle :: Position -> IO ()
 particle p = do
-    t3 ~+~ p
+    t3 ~+~ v't p
     renderSphere
 
 renderSphere :: IO ()
