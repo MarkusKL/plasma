@@ -12,6 +12,7 @@ module Physics
 , absV
 , (*-)
 , v't
+, (><)
 ) where
 
 import Graphics.UI.GLUT (GLfloat)
@@ -48,3 +49,7 @@ adjustLength l v3 = l *- signum v3
 
 v't :: Vector -> (GLfloat,GLfloat,GLfloat)
 v't (V x y z) = (x,y,z)
+
+infix 8 >< -- Cross product
+(><) :: Vector -> Vector -> Vector
+(V u1 u2 u3) >< (V v1 v2 v3) = V (u2*v3 - u3*v2) (u3*v1 - u1*v3) (u1*v2 - u2*v1)

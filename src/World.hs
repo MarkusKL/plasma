@@ -61,10 +61,11 @@ pinch :: [Particle] -> Particle -> Particle
 pinch ps p = p { pVelocity = pVelocity p + foldr (\p' v -> pinchTwo p' p + v) 0 ps }
 
 pinchTwo :: Particle -> Particle -> Velocity
-pinchTwo p p' = if pPosition p == pPosition p'
+pinchTwo p p' = if absV pos == 0
   then 0
-  else (0.03 / absV pos)^2 *- pos
-  where pos = pPosition p + (-1) *- pPosition p'
+  else (0.4 / absV pos)^2 *- signum (vel >< (pos >< vel)) + (-1*(0.03 / absV pos)^2) *- pos
+  where pos = pPosition p - pPosition p'
+        vel = pVelocity p
 
 addParticle :: Particle -> World -> World
 addParticle p w = w { wParticles = p:wParticles w }
