@@ -8,13 +8,15 @@ module Window
 , c4
 ) where
 
+import Control.Monad.State.Strict (execState, State)
+
 import Graphics.UI.GLUT
 import Data.IORef
 
-initWindow :: a
-           -> (a -> IO ())
-           -> (Int -> a -> a)
-           -> (Key -> KeyState -> Modifiers -> Position -> a -> a)
+initWindow :: s
+           -> (s -> IO ())
+           -> (Int -> State s ())
+           -> (Key -> KeyState -> Modifiers -> Position -> State s ())
            -> IO ()
 initWindow start draw update keyCB = do
     getArgsAndInitialize
@@ -34,7 +36,7 @@ initWindow start draw update keyCB = do
     idleCallback $= Just (idle)
     return ()
 
-display :: (a -> IO ()) -> (Int -> a -> a) -> IORef a -> DisplayCallback
+display :: (s -> IO ()) -> (Int -> State s ()) -> IORef s -> DisplayCallback
 display drawFunc updateFunc worldRef = do
     
     clear [ColorBuffer,DepthBuffer]
@@ -46,18 +48,19 @@ display drawFunc updateFunc worldRef = do
 
     time <- get elapsedTime
     print time
-    worldRef $~! (updateFunc time)
-    world <- get worldRef
-    drawFunc world
+
+    worldRef $~! execState (updateFunc time)
+    get worldRef >>= drawFunc
 
     swapBuffers
 
-keyboardMouse :: (Key -> KeyState -> Modifiers -> Position -> a -> a)
-              -> IORef a
+keyboardMouse :: (Key -> KeyState -> Modifiers -> Position -> State s ())
+              -> IORef s
               -> KeyboardMouseCallback
 keyboardMouse _ _ (Char 'f') Down _ _ = fullScreenToggle
 keyboardMouse _ _ (Char '\ESC') Down _ _ = exit
-keyboardMouse f worldRef key keySt mod pos = worldRef $~! f key keySt mod pos
+keyboardMouse f worldRef key keySt mod pos =
+                   worldRef $~! execState (f key keySt mod pos)
 
 
 v3 :: GLfloat -> GLfloat -> GLfloat -> IO ()

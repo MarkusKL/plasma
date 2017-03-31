@@ -20,11 +20,13 @@ import Util
 
 data Vector = V GLfloat GLfloat GLfloat deriving (Show,Eq)
 type GLfl4 = (GLfloat,GLfloat,GLfloat,GLfloat)
+
 type Time = Int
 type Delta = Time
-type Velocity = Vector
+
 type Position = Vector
-type Acceleration = Vector
+type Velocity = Position
+type Acceleration = Velocity
 
 instance Num Vector where
   V a1 a2 a3 + V b1 b2 b3 = V (a1+b1) (a2+b2) (a3+b3)

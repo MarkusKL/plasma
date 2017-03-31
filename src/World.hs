@@ -1,6 +1,7 @@
 module World 
 ( Time
 , World
+, WorldS
 , wTime
 , wParticles
 , Particle (Particle)
@@ -19,6 +20,7 @@ module World
 import System.Random
 import Util
 import Physics
+import Control.Monad.State.Strict
 
 data World = World { wTime :: Time
                    , wParticles :: [Particle]
@@ -27,6 +29,8 @@ data World = World { wTime :: Time
 data Particle = Particle { pPosition :: Position
                          , pVelocity :: Velocity
                          }
+
+type WorldS = State World
 
 newWorld :: World
 newWorld = World 0 genParticle
@@ -37,12 +41,16 @@ radius = 750
 baseVel :: GLfloat
 baseVel = 0.2
 
-updateWorld :: Time -> World -> World
-updateWorld t w = updateParticles d $ changeTime t w
-  where d = t - wTime w
+updateWorld :: Time -> WorldS ()
+updateWorld time = do
+  w <- get
+  let delta = time - wTime w
+  updateParticles delta
+  changeTime time
+  return ()
 
-updateParticles :: Delta -> World -> World
-updateParticles d w = w { wParticles = pinchAll (updateParticle d <$> wParticles w) }
+updateParticles :: Delta -> WorldS ()
+updateParticles d = modify $ \w -> w { wParticles = pinchAll (updateParticle d <$> wParticles w) }
 
 updateParticle :: Delta -> Particle -> Particle
 updateParticle d p = circle d $ p { pPosition =  move d (pVelocity p) (pPosition p) }
@@ -70,8 +78,8 @@ pinchTwo p p' = if absV pos == 0
 addParticle :: Particle -> World -> World
 addParticle p w = w { wParticles = p:wParticles w }
 
-changeTime :: Time -> World -> World
-changeTime t w = w { wTime = t } 
+changeTime :: Time -> WorldS ()
+changeTime t = modify $ \w -> w { wTime = t }
 
 randomPosition :: Time -> Position
 randomPosition t = V (cos v * radius) (sin v * radius) 0

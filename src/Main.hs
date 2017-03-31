@@ -18,10 +18,10 @@ drawWorld w = do
     preservingMatrix (mapM_ (drawParticle t) $ wParticles w)
     where t = wTime w
 
-handleKeys :: Key -> KeyState -> Modifiers -> GL.Position -> World -> World
+handleKeys :: Key -> KeyState -> Modifiers -> GL.Position -> WorldS ()
 --handleKeys (Char 'n') Down _ _ w = addParticle (genParticle t) w
 --  where t = wTime w
-handleKeys _ _ _ _ w = w
+handleKeys _ _ _ _ = return ()
 
 drawParticle :: Time -> Particle -> IO ()
 drawParticle t p = do
